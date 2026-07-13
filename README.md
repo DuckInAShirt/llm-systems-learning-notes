@@ -10,6 +10,7 @@
 
 - [Transformer 基础：从 Embedding 到 Attention 输出](foundations/transformer/from-embedding-to-attention.md)
 - [Linux 文档阅读：man page、通配符和文件层级](foundations/linux/man-page-reading.md)
+- [LLM 算法面试基础一轮进度](interview-prep/PROGRESS.md)
 
 ### vLLM / SGLang 源码阅读
 
@@ -53,4 +54,4 @@
 - Transformer embedding、QKV、多头注意力、LayerNorm、残差连接：已开始整理。
 - Linux man page 阅读方法：已开始整理。
 - vLLM / SGLang / CUDA / K8S / RLHF-GRPO：路线占位，后续逐步补充。
-
+- LLM 算法面试基础一轮：第 1 天进行中；按明确完成记录推进。
