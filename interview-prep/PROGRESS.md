@@ -7,6 +7,7 @@
 - 当前学习：第 1 天 - Token、Embedding 与位置信息
 - 当前必答题：Tokenizer 为什么要把文本切成 token？BPE 的核心思想是什么？
 - 推进方式：完成当天学习后明确标记“完成”，才进入下一天。收到微信推送不算完成。
+- 高频题索引：[LLM 算法高频面试题总表](HIGH_FREQUENCY_QUESTIONS.md)
 
 ## 路线
 

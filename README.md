@@ -11,6 +11,7 @@
 - [Transformer 基础：从 Embedding 到 Attention 输出](foundations/transformer/from-embedding-to-attention.md)
 - [Linux 文档阅读：man page、通配符和文件层级](foundations/linux/man-page-reading.md)
 - [LLM 算法面试基础一轮进度](interview-prep/PROGRESS.md)
+- [LLM 算法高频面试题总表](interview-prep/HIGH_FREQUENCY_QUESTIONS.md)
 
 ### vLLM / SGLang 源码阅读
 
