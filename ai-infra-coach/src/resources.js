@@ -156,6 +156,53 @@ const week2 = ["vllmArchitecture", "vllmRepo", "vllmTalk"];
 const week3 = ["servingBenchmark", "benchmarkDataset", "nsightSystems"];
 const week4 = ["rayServeLlm", "rayProduction", "sglangDocs"];
 
+const resourceGuides = {
+  vllmDocs: "遇到参数或概念时查，不需要从首页顺序读完。",
+  vllmQuickstart: "先完成离线推理，再启动 OpenAI 兼容服务；每条命令都亲手运行。",
+  vllmArchitecture: "先看架构图和组件职责，再带着当天的源码问题阅读。",
+  vllmRepo: "固定 commit 后，从课程指定的关键词搜索，不要从目录第一行开始读。",
+  pagedPaper: "先读摘要、Figure 1 和系统设计，再回头看实验；第一次不用啃完公式。",
+  vllmTalk: "先建立系统直觉，记下不懂的三个词，再回到课程讲义查。",
+  inferenceVideo: "重点听 prefill、decode、KV Cache 和 batching，暂时跳过部署细节。",
+  servingBenchmark: "先确认请求分布和指标口径，再复制命令；不要只抄最终 TPS。",
+  prefixCaching: "重点看命中条件和限制，随后完成 Day 19 的命中/不命中对照实验。",
+  quantization: "先看硬件支持表和格式差异，再选择与你的 A30 兼容的模型。",
+  kvQuantization: "只用于区分权重量化和 KV 量化，配合 Day 2/20 阅读。",
+  ncclOverview: "先理解 rank、communicator 和 collective 三个词，再进入具体通信操作。",
+  ncclCollectives: "配合 Day 13 的 NumPy 切分实验，重点看 AllReduce、AllGather、ReduceScatter。",
+  ncclVideo: "看完后画一张两卡通信图，不要求记住所有拓扑算法。",
+  nvidiaMultiGpuVideo: "带着 TP=1/2/4 的实验结果看，关注 PCIe/NVLink 对通信的影响。",
+  nsightSystems: "先学会打开时间线和识别 CUDA/NCCL 区段，不需要一次掌握全部功能。",
+  rayServeLlm: "先区分 Ray Serve 与 vLLM 的职责，再看部署示例。",
+  rayProduction: "Day 24-28 按故障、监控和生产部署问题定向查询。",
+  rayArchitecture: "配合 Day 26 架构图阅读，只追踪一次请求到一个模型副本。",
+  kubernetesGpu: "只先掌握设备插件、resource limit 和 Pod/GPU 分配。",
+  sglangDocs: "先跑通最小服务，再看 RadixAttention，不要同时比较所有特性。",
+  sglangBenchmark: "复用自己的 benchmark 协议，重点检查两边默认参数是否一致。",
+  sglangPd: "属于扩展阅读，完成基础对比后再看 prefill/decode 分离。",
+  sglangRepo: "从 server、scheduler 和 cache 三个关键词建立源码入口。",
+};
+
+const typeDefaults = {
+  文档: { time: "20-30 分钟", difficulty: "入门" },
+  视频: { time: "20-40 分钟", difficulty: "入门" },
+  论文: { time: "40-60 分钟", difficulty: "进阶" },
+  源码: { time: "30-60 分钟", difficulty: "进阶" },
+};
+
+function buildResource(id, order) {
+  const resource = resourceLibrary[id];
+  if (!resource) return null;
+  return {
+    id,
+    ...resource,
+    ...typeDefaults[resource.type],
+    studyGuide: resourceGuides[id] || resource.note,
+    order,
+    role: order === 1 ? "主修" : "补充",
+  };
+}
+
 export const dailyResourceIds = {
   1: ["inferenceVideo", "vllmTalk", "vllmDocs"],
   2: ["pagedPaper", "inferenceVideo", "kvQuantization"],
@@ -189,9 +236,33 @@ export const dailyResourceIds = {
   30: [...week4, "sglangPd"],
 };
 
+export function resourcesForIds(ids) {
+  const seenUrls = new Set();
+  return (ids || [])
+    .map((id, index) => buildResource(id, index + 1))
+    .filter((resource) => {
+      if (!resource || seenUrls.has(resource.url)) return false;
+      seenUrls.add(resource.url);
+      return true;
+    })
+    .map((resource, index) => ({
+      ...resource,
+      order: index + 1,
+      role: index === 0 ? "主修" : "补充",
+    }));
+}
+
+export const allResources = (() => {
+  const seenUrls = new Set();
+  return Object.keys(resourceLibrary)
+    .map((id, index) => buildResource(id, index + 1))
+    .filter((resource) => {
+      if (!resource || seenUrls.has(resource.url)) return false;
+      seenUrls.add(resource.url);
+      return true;
+    });
+})();
+
 export function resourcesForDay(day) {
-  return (dailyResourceIds[day] || []).map((id) => ({
-    id,
-    ...resourceLibrary[id],
-  }));
+  return resourcesForIds(dailyResourceIds[day] || []);
 }

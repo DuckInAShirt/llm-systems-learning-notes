@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   BarChart3,
+  BookOpen,
   BookOpenCheck,
   Brain,
   Check,
@@ -12,12 +13,15 @@ import {
   Clock3,
   Cloud,
   CloudOff,
+  Copy,
   Cpu,
   Download,
   ExternalLink,
   FlaskConical,
   Gauge,
+  Lightbulb,
   LibraryBig,
+  ListChecks,
   LogIn,
   LogOut,
   Mail,
@@ -27,15 +31,19 @@ import {
   RotateCcw,
   ServerCog,
   Square,
+  Terminal,
   Trash2,
   X,
 } from "lucide-react";
+import { courseForDay } from "./course";
 import { questionsForDay } from "./interview";
 import { phases, plan, taskId } from "./plan";
-import { resourceLibrary, resourcesForDay } from "./resources";
+import { allResources, resourcesForIds } from "./resources";
 import { authRedirectUrl, supabase, supabaseConfigured } from "./supabase";
 
 const STORAGE_KEY = "ai-infra-coach-v2";
+const LAB_REPO_URL =
+  "https://github.com/DuckInAShirt/llm-systems-learning-notes/tree/main/ai-infra-coach/labs";
 
 const emptyState = {
   selectedDay: 1,
@@ -43,6 +51,7 @@ const emptyState = {
   notes: {},
   confidence: {},
   focusSessions: {},
+  labDone: {},
   experiments: [],
   startDate: new Date().toISOString().slice(0, 10),
 };
@@ -67,6 +76,7 @@ function normalizeState(candidate) {
       ...emptyState.focusSessions,
       ...(candidate?.focusSessions || {}),
     },
+    labDone: { ...emptyState.labDone, ...(candidate?.labDone || {}) },
     experiments: candidate?.experiments || [],
   };
 }
@@ -211,11 +221,14 @@ function App() {
   }, [state, user]);
 
   const selected = plan[state.selectedDay - 1];
-  const totalTasks = plan.reduce(
+  const checklistTasks = plan.reduce(
     (sum, day) => sum + day.deep.length + day.fragments.length,
     0,
   );
-  const completedTasks = Object.values(state.completed).filter(Boolean).length;
+  const totalTasks = checklistTasks + plan.length;
+  const completedTasks =
+    Object.values(state.completed).filter(Boolean).length +
+    Object.values(state.labDone).filter(Boolean).length;
   const progress = Math.round((completedTasks / totalTasks) * 100);
 
   const selectedTaskIds = [
@@ -224,7 +237,9 @@ function App() {
       taskId(selected.day, "fragment", index),
     ),
   ];
-  const selectedDone = selectedTaskIds.filter((id) => state.completed[id]).length;
+  const selectedDone =
+    selectedTaskIds.filter((id) => state.completed[id]).length +
+    (state.labDone[selected.day] ? 1 : 0);
 
   function update(patch) {
     setState((current) => ({ ...current, ...patch }));
@@ -410,8 +425,11 @@ function App() {
                       taskId(item.day, "fragment", index),
                     ),
                   ];
-                  const done = ids.filter((id) => state.completed[id]).length;
-                  const finished = done === ids.length;
+                  const done =
+                    ids.filter((id) => state.completed[id]).length +
+                    (state.labDone[item.day] ? 1 : 0);
+                  const total = ids.length + 1;
+                  const finished = done === total;
                   return (
                     <button
                       type="button"
@@ -426,7 +444,7 @@ function App() {
                       </span>
                       <span>{item.title}</span>
                       <small>
-                        {done}/{ids.length}
+                        {done}/{total}
                       </small>
                     </button>
                   );
@@ -441,7 +459,7 @@ function App() {
               day={selected}
               state={state}
               selectedDone={selectedDone}
-              totalSelected={selectedTaskIds.length}
+              totalSelected={selectedTaskIds.length + 1}
               toggleTask={toggleTask}
               update={update}
               onConfidence={setConfidence}
@@ -599,7 +617,8 @@ function TodayView({
     0,
   );
   const questions = questionsForDay(day);
-  const resources = resourcesForDay(day.day);
+  const lesson = courseForDay(day.day);
+  const resources = resourcesForIds(lesson.resources);
 
   return (
     <>
@@ -643,8 +662,20 @@ function TodayView({
 
       <div className="today-layout">
         <div className="task-column">
+          <CourseLesson
+            lesson={lesson}
+            done={Boolean(state.labDone[day.day])}
+            onToggle={() =>
+              update({
+                labDone: {
+                  ...state.labDone,
+                  [day.day]: !state.labDone[day.day],
+                },
+              })
+            }
+          />
           <TaskSection
-            title="深度任务"
+            title="课后巩固"
             subtitle={`${formatMinutes(deepMinutes)} · 理解、代码、实验`}
             tasks={day.deep}
             bucket="deep"
@@ -701,6 +732,148 @@ function TodayView({
         </aside>
       </div>
     </>
+  );
+}
+
+function CourseLesson({ lesson, done, onToggle }) {
+  return (
+    <section className="course-section">
+      <div className="section-title course-heading">
+        <div>
+          <h2>本课讲义</h2>
+          <span>先建立概念，再用配套 Lab 验证</span>
+        </div>
+        <BookOpen size={19} />
+      </div>
+
+      <div className="lesson-band">
+        <span className="lesson-module">{lesson.module}</span>
+        <h3>{lesson.lessonTitle}</h3>
+        <p>{lesson.lesson}</p>
+        <div className="key-point-grid">
+          {lesson.keyPoints.map((item) => (
+            <article className="key-point" key={item.title}>
+              <Lightbulb size={17} />
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="lab-band">
+        <div className="lab-heading">
+          <div>
+            <span>配套实验</span>
+            <h3>{lesson.lab.title}</h3>
+          </div>
+          <div className="lab-heading-actions">
+            <span className="lab-environment">{lesson.lab.environment}</span>
+            <a
+              className="lab-source-link"
+              href={LAB_REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Lab 文件
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+        <p className="lab-goal">{lesson.lab.goal}</p>
+
+        <div className="lab-steps">
+          {lesson.lab.steps.map((step, index) => (
+            <article className="lab-step" key={step.title}>
+              <span className="lab-step-number">{index + 1}</span>
+              <div>
+                <h4>{step.title}</h4>
+                <p>{step.detail}</p>
+                {step.code && <CodeBlock value={step.code} />}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {lesson.lab.code && (
+          <div className="lab-command">
+            <span>
+              <Terminal size={16} />
+              运行入口
+            </span>
+            <CodeBlock value={lesson.lab.code} />
+          </div>
+        )}
+
+        <div className="lab-acceptance">
+          <div>
+            <ListChecks size={18} />
+            <strong>验收标准</strong>
+          </div>
+          <ul>
+            {lesson.lab.acceptance.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p>
+            <span>产出物</span>
+            {lesson.lab.deliverable}
+          </p>
+        </div>
+
+        <button
+          className={`lab-complete ${done ? "is-complete" : ""}`}
+          type="button"
+          onClick={onToggle}
+        >
+          {done ? <CheckCircle2 size={18} /> : <Square size={17} />}
+          {done ? "Lab 已完成" : "完成验收后标记 Lab"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function CodeBlock({ value }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const field = document.createElement("textarea");
+        field.value = value;
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        document.execCommand("copy");
+        field.remove();
+      }
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <div className="code-block">
+      <pre>
+        <code>{value}</code>
+      </pre>
+      <button
+        type="button"
+        aria-label="复制代码"
+        title="复制代码"
+        onClick={copy}
+      >
+        {copied ? <Check size={15} /> : <Copy size={15} />}
+      </button>
+    </div>
   );
 }
 
@@ -1052,13 +1225,18 @@ function DailyResources({ resources }) {
       <div className="section-title">
         <div>
           <h2>今日资料</h2>
-          <span>官方文档优先，视频负责建立直觉</span>
+          <span>先看主修，再按需要打开补充；每份资料都对应今天的 Lab</span>
         </div>
         <LibraryBig size={19} />
       </div>
       <div className="resource-list">
-        {resources.map((resource) => (
-          <ResourceRow resource={resource} key={resource.id} />
+        {resources.map((resource, index) => (
+          <ResourceRow
+            resource={resource}
+            key={resource.id}
+            showOrder
+            index={index}
+          />
         ))}
       </div>
     </section>
@@ -1074,7 +1252,7 @@ function resourceTypeClass(type) {
   }[type];
 }
 
-function ResourceRow({ resource }) {
+function ResourceRow({ resource, showOrder = false, index = 0 }) {
   return (
     <a
       className="resource-row"
@@ -1082,12 +1260,18 @@ function ResourceRow({ resource }) {
       target="_blank"
       rel="noreferrer"
     >
-      <span className={`resource-type ${resourceTypeClass(resource.type)}`}>
-        {resource.type}
+      <span className="resource-badge">
+        <span className={`resource-type ${resourceTypeClass(resource.type)}`}>
+          {resource.type}
+        </span>
+        {showOrder && <small>{index === 0 ? "先看" : "补充"}</small>}
       </span>
       <span className="resource-copy">
         <strong>{resource.title}</strong>
-        <small>{resource.note}</small>
+        <small>{resource.studyGuide || resource.note}</small>
+        <span className="resource-meta">
+          {resource.difficulty} · {resource.time}
+        </span>
       </span>
       <ExternalLink size={17} />
     </a>
@@ -1115,8 +1299,11 @@ function RoadmapView({ state, selectDay, progress }) {
               taskId(day.day, "fragment", index),
             ),
           ]);
-          const done = ids.filter((id) => state.completed[id]).length;
-          const percent = Math.round((done / ids.length) * 100);
+          const done =
+            ids.filter((id) => state.completed[id]).length +
+            days.filter((day) => state.labDone[day.day]).length;
+          const total = ids.length + days.length;
+          const percent = Math.round((done / total) * 100);
           return (
             <div className="phase-block" key={phase.id}>
               <div className="phase-number">0{phase.id}</div>
@@ -1147,7 +1334,10 @@ function RoadmapView({ state, selectDay, progress }) {
               taskId(day.day, "fragment", index),
             ),
           ];
-          const done = ids.filter((id) => state.completed[id]).length;
+          const done =
+            ids.filter((id) => state.completed[id]).length +
+            (state.labDone[day.day] ? 1 : 0);
+          const total = ids.length + 1;
           return (
             <button
               className="table-row"
@@ -1159,7 +1349,7 @@ function RoadmapView({ state, selectDay, progress }) {
               <strong>{day.title}</strong>
               <span>{day.deliverable}</span>
               <span>
-                {done}/{ids.length}
+                {done}/{total}
                 <ChevronRight size={15} />
               </span>
             </button>
@@ -1499,10 +1689,7 @@ function MetricChart({ data, metric }) {
 }
 
 function ResourcesView() {
-  const resources = Object.entries(resourceLibrary).map(([id, resource]) => ({
-    id,
-    ...resource,
-  }));
+  const resources = allResources;
   const groups = ["文档", "源码", "论文", "视频"];
 
   return (
@@ -1511,7 +1698,7 @@ function ResourcesView() {
         <div>
           <div className="eyebrow">Learning Library</div>
           <h1>AI Infra 学习资料库</h1>
-          <p>围绕推理原理、vLLM 源码、4×A30 实验和服务化组织的精选资料。</p>
+          <p>已按 URL 去重。每天只需要先学主修资料，补充资料用于卡住时定向查阅。</p>
         </div>
         <div className="library-count">
           <strong>{resources.length}</strong>

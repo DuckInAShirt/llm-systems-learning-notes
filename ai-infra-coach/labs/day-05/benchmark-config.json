@@ -1,0 +1,10 @@
+{
+  "model": "your-model",
+  "dtype": "float16",
+  "tp": 1,
+  "concurrency": 4,
+  "prompt_tokens": 512,
+  "output_tokens": 128,
+  "warmup": 2,
+  "repeats": 5
+}
