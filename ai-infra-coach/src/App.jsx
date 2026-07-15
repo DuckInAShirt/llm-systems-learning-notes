@@ -33,7 +33,7 @@ import {
 import { questionsForDay } from "./interview";
 import { phases, plan, taskId } from "./plan";
 import { resourceLibrary, resourcesForDay } from "./resources";
-import { supabase, supabaseConfigured } from "./supabase";
+import { authRedirectUrl, supabase, supabaseConfigured } from "./supabase";
 
 const STORAGE_KEY = "ai-infra-coach-v2";
 
@@ -274,7 +274,7 @@ function App() {
     const { error } = await supabase.auth.signInWithOtp({
       email: authEmail.trim(),
       options: {
-        emailRedirectTo: window.location.href,
+        emailRedirectTo: authRedirectUrl,
       },
     });
 
