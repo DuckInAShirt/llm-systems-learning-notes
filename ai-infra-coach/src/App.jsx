@@ -10,12 +10,17 @@ import {
   ChevronRight,
   CircleHelp,
   Clock3,
+  Cloud,
+  CloudOff,
   Cpu,
   Download,
   ExternalLink,
   FlaskConical,
   Gauge,
   LibraryBig,
+  LogIn,
+  LogOut,
+  Mail,
   Pause,
   Play,
   Plus,
@@ -23,10 +28,12 @@ import {
   ServerCog,
   Square,
   Trash2,
+  X,
 } from "lucide-react";
 import { questionsForDay } from "./interview";
 import { phases, plan, taskId } from "./plan";
 import { resourceLibrary, resourcesForDay } from "./resources";
+import { supabase, supabaseConfigured } from "./supabase";
 
 const STORAGE_KEY = "ai-infra-coach-v2";
 
@@ -43,10 +50,25 @@ const emptyState = {
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...emptyState, ...JSON.parse(raw) } : emptyState;
+    return raw ? normalizeState(JSON.parse(raw)) : emptyState;
   } catch {
     return emptyState;
   }
+}
+
+function normalizeState(candidate) {
+  return {
+    ...emptyState,
+    ...candidate,
+    completed: { ...emptyState.completed, ...(candidate?.completed || {}) },
+    notes: { ...emptyState.notes, ...(candidate?.notes || {}) },
+    confidence: { ...emptyState.confidence, ...(candidate?.confidence || {}) },
+    focusSessions: {
+      ...emptyState.focusSessions,
+      ...(candidate?.focusSessions || {}),
+    },
+    experiments: candidate?.experiments || [],
+  };
 }
 
 function formatMinutes(minutes) {
@@ -72,10 +94,121 @@ function downloadJson(filename, payload) {
 function App() {
   const [state, setState] = useState(loadState);
   const [tab, setTab] = useState("today");
+  const [user, setUser] = useState(null);
+  const [syncStatus, setSyncStatus] = useState(
+    supabaseConfigured ? "checking" : "disabled",
+  );
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const hydratedUserRef = useRef(null);
+  const hydratingUserRef = useRef(null);
+  const uploadTimerRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+
+    let mounted = true;
+
+    async function hydrateUser(userId) {
+      if (
+        !mounted ||
+        hydratedUserRef.current === userId ||
+        hydratingUserRef.current === userId
+      ) {
+        return;
+      }
+
+      hydratingUserRef.current = userId;
+      setSyncStatus("loading");
+      const { data, error } = await supabase
+        .from("learning_progress")
+        .select("state")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!mounted) return;
+
+      if (error) {
+        hydratingUserRef.current = null;
+        setSyncStatus("error");
+        return;
+      }
+
+      if (data?.state) {
+        setState(normalizeState(data.state));
+      }
+
+      hydratedUserRef.current = userId;
+      hydratingUserRef.current = null;
+      setSyncStatus("synced");
+    }
+
+    function applySession(session) {
+      const nextUser = session?.user || null;
+      setUser(nextUser);
+
+      if (!nextUser) {
+        hydratedUserRef.current = null;
+        hydratingUserRef.current = null;
+        setSyncStatus("signedOut");
+        return;
+      }
+
+      window.setTimeout(() => hydrateUser(nextUser.id), 0);
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) applySession(data.session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) applySession(session);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      if (uploadTimerRef.current) {
+        window.clearTimeout(uploadTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!supabase || !user || hydratedUserRef.current !== user.id) {
+      return undefined;
+    }
+
+    if (uploadTimerRef.current) {
+      window.clearTimeout(uploadTimerRef.current);
+    }
+
+    setSyncStatus("saving");
+    uploadTimerRef.current = window.setTimeout(async () => {
+      const { error } = await supabase.from("learning_progress").upsert(
+        {
+          user_id: user.id,
+          state,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+      setSyncStatus(error ? "error" : "synced");
+    }, 700);
+
+    return () => {
+      if (uploadTimerRef.current) {
+        window.clearTimeout(uploadTimerRef.current);
+      }
+    };
+  }, [state, user]);
 
   const selected = plan[state.selectedDay - 1];
   const totalTasks = plan.reduce(
@@ -133,6 +266,29 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function sendMagicLink(event) {
+    event.preventDefault();
+    if (!supabase || !authEmail.trim()) return;
+
+    setAuthMessage("正在发送登录链接...");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: authEmail.trim(),
+      options: {
+        emailRedirectTo: window.location.href,
+      },
+    });
+
+    setAuthMessage(
+      error ? `发送失败：${error.message}` : "登录链接已发送，请检查邮箱。",
+    );
+  }
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setAuthModalOpen(false);
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -180,6 +336,16 @@ function App() {
         </nav>
 
         <div className="top-actions">
+          <SyncControl
+            configured={supabaseConfigured}
+            user={user}
+            status={syncStatus}
+            onSignIn={() => {
+              setAuthMessage("");
+              setAuthModalOpen(true);
+            }}
+            onSignOut={signOut}
+          />
           <div className="overall-progress" aria-label={`总进度 ${progress}%`}>
             <span>{progress}%</span>
             <div>
@@ -305,6 +471,100 @@ function App() {
           {tab === "resources" && <ResourcesView />}
         </main>
       </div>
+      {authModalOpen && (
+        <AuthModal
+          email={authEmail}
+          message={authMessage}
+          onEmailChange={setAuthEmail}
+          onSubmit={sendMagicLink}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function SyncControl({ configured, user, status, onSignIn, onSignOut }) {
+  if (!configured) return null;
+
+  const labels = {
+    checking: "检查同步",
+    loading: "读取云端",
+    saving: "保存中",
+    synced: "已同步",
+    error: "同步失败",
+    signedOut: "登录同步",
+  };
+
+  return (
+    <button
+      className={`sync-control ${status === "error" ? "is-error" : ""}`}
+      type="button"
+      onClick={user ? onSignOut : onSignIn}
+      aria-label={user ? "退出云端同步" : "登录并开启云端同步"}
+      title={user ? "退出云端同步" : "登录并开启云端同步"}
+    >
+      {user ? <Cloud size={16} /> : <CloudOff size={16} />}
+      <span>{user ? labels[status] || "已同步" : labels.signedOut}</span>
+      {user ? <LogOut size={14} /> : <LogIn size={14} />}
+    </button>
+  );
+}
+
+function AuthModal({
+  email,
+  message,
+  onEmailChange,
+  onSubmit,
+  onClose,
+}) {
+  return (
+    <div className="auth-backdrop" role="presentation">
+      <section
+        className="auth-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-title"
+      >
+        <div className="auth-modal-heading">
+          <div>
+            <span className="eyebrow">Cloud Sync</span>
+            <h2 id="auth-title">登录后同步学习进度</h2>
+          </div>
+          <button
+            className="icon-button"
+            type="button"
+            aria-label="关闭登录窗口"
+            onClick={onClose}
+          >
+            <X size={17} />
+          </button>
+        </div>
+        <p>使用邮箱接收一次性登录链接，不需要设置或记忆密码。</p>
+        <form onSubmit={onSubmit}>
+          <label className="auth-field">
+            <span>邮箱</span>
+            <input
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(event) => onEmailChange(event.target.value)}
+              placeholder="you@example.com"
+            />
+          </label>
+          {message && <p className="auth-message">{message}</p>}
+          <div className="auth-actions">
+            <button className="secondary-action" type="button" onClick={onClose}>
+              取消
+            </button>
+            <button className="primary-action" type="submit">
+              <Mail size={16} />
+              发送登录链接
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

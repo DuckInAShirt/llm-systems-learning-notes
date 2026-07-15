@@ -34,3 +34,21 @@ https://duckinashirt.github.io/llm-systems-learning-notes/
 ```
 
 当前进度保存在浏览器 `localStorage`。更换浏览器或设备后不会自动同步，可使用页面右上角的导出按钮备份。
+
+## 云端同步
+
+登录网页右上角的同步入口后，学习状态会保存到 Supabase 的
+`learning_progress` 表。数据库结构和 RLS 策略位于：
+
+```text
+supabase/schema.sql
+```
+
+GitHub Pages 构建通过以下 Actions Secrets 注入浏览器端配置：
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+```
+
+未登录时仍可离线使用；登录后会优先读取云端记录，并在本地修改后自动保存。
