@@ -40,6 +40,7 @@ import { questionsForDay } from "./interview";
 import { phases, plan, taskId } from "./plan";
 import { allResources, resourcesForIds } from "./resources";
 import { authRedirectUrl, supabase, supabaseConfigured } from "./supabase";
+import { answerForTask } from "./taskAnswers";
 
 const STORAGE_KEY = "ai-infra-coach-v2";
 const LAB_REPO_URL =
@@ -898,6 +899,12 @@ function TaskSection({
   completed,
   onToggle,
 }) {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    setOpenIndex(null);
+  }, [bucket, day]);
+
   return (
     <section className="task-section">
       <div className="section-title">
@@ -910,22 +917,47 @@ function TaskSection({
         {tasks.map((task, index) => {
           const id = taskId(day, bucket, index);
           const checked = Boolean(completed[id]);
+          const open = openIndex === index;
+          const answerLabel =
+            bucket === "fragment" ? "快速回顾" : "参考完成标准";
           return (
-            <label className={`task-row ${checked ? "is-complete" : ""}`} key={id}>
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() => onToggle(id)}
-              />
-              <span className="custom-check">
-                {checked && <Check size={14} strokeWidth={2.5} />}
-              </span>
-              <span className="task-copy">
-                <strong>{task.label}</strong>
-                {task.kind && <small>{task.kind}</small>}
-              </span>
-              <span className="task-time">{task.minutes} min</span>
-            </label>
+            <article
+              className={`task-item ${checked ? "is-complete" : ""}`}
+              key={id}
+            >
+              <div className="task-row">
+                <label className="task-main">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggle(id)}
+                  />
+                  <span className="custom-check">
+                    {checked && <Check size={14} strokeWidth={2.5} />}
+                  </span>
+                  <span className="task-copy">
+                    <strong>{task.label}</strong>
+                    {task.kind && <small>{task.kind}</small>}
+                  </span>
+                </label>
+                <span className="task-time">{task.minutes} min</span>
+                <button
+                  className="task-answer-toggle"
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenIndex(open ? null : index)}
+                >
+                  {bucket === "fragment" ? "回顾" : "参考"}
+                  <ChevronDown size={15} className={open ? "is-rotated" : ""} />
+                </button>
+              </div>
+              {open && (
+                <div className="task-answer-panel">
+                  <span>{answerLabel}</span>
+                  <p>{answerForTask(day, bucket, index)}</p>
+                </div>
+              )}
+            </article>
           );
         })}
       </div>

@@ -785,22 +785,33 @@ h1 {
   display: grid;
 }
 
-.task-row {
-  min-height: 62px;
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 5px;
+.task-item {
   border-top: 1px solid var(--border);
-  cursor: pointer;
 }
 
-.task-row:last-child {
+.task-item:last-child {
   border-bottom: 1px solid var(--border);
 }
 
-.task-row input {
+.task-row {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 70px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 5px;
+}
+
+.task-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.task-main input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
@@ -817,7 +828,7 @@ h1 {
   border-radius: 5px;
 }
 
-.task-row.is-complete .custom-check {
+.task-item.is-complete .custom-check {
   background: var(--green);
   border-color: var(--green);
 }
@@ -842,7 +853,7 @@ h1 {
   font-size: 10px;
 }
 
-.task-row.is-complete .task-copy strong {
+.task-item.is-complete .task-copy strong {
   color: var(--muted);
   text-decoration: line-through;
 }
@@ -851,6 +862,53 @@ h1 {
   color: var(--muted);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+}
+
+.task-answer-toggle {
+  min-height: 31px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 7px;
+  color: var(--cyan);
+  background: var(--cyan-soft);
+  border: 0;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.task-answer-toggle:hover {
+  color: white;
+  background: var(--cyan);
+}
+
+.task-answer-toggle svg {
+  transition: transform 150ms ease;
+}
+
+.task-answer-toggle svg.is-rotated {
+  transform: rotate(180deg);
+}
+
+.task-answer-panel {
+  padding: 14px 17px 16px 39px;
+  background: rgba(221, 241, 243, 0.34);
+  border-top: 1px dashed var(--border);
+}
+
+.task-answer-panel > span {
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.task-answer-panel p {
+  margin: 6px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.75;
 }
 
 .notes-section textarea {
