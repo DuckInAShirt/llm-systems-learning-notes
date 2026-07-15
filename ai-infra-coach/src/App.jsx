@@ -52,6 +52,7 @@ const emptyState = {
   confidence: {},
   focusSessions: {},
   labDone: {},
+  labRecords: {},
   experiments: [],
   startDate: new Date().toISOString().slice(0, 10),
 };
@@ -77,6 +78,7 @@ function normalizeState(candidate) {
       ...(candidate?.focusSessions || {}),
     },
     labDone: { ...emptyState.labDone, ...(candidate?.labDone || {}) },
+    labRecords: { ...emptyState.labRecords, ...(candidate?.labRecords || {}) },
     experiments: candidate?.experiments || [],
   };
 }
@@ -333,7 +335,7 @@ function App() {
           <TabButton
             active={tab === "experiments"}
             icon={<FlaskConical size={17} />}
-            label="实验"
+            label="Lab"
             onClick={() => setTab("experiments")}
           />
           <TabButton
@@ -474,10 +476,7 @@ function App() {
             />
           )}
           {tab === "experiments" && (
-            <ExperimentsView
-              experiments={state.experiments}
-              onChange={(experiments) => update({ experiments })}
-            />
+            <LabsView state={state} update={update} />
           )}
           {tab === "review" && (
             <ReviewView
@@ -1356,6 +1355,146 @@ function RoadmapView({ state, selectDay, progress }) {
           );
         })}
       </section>
+    </>
+  );
+}
+
+const LAB_FILTERS = [
+  "全部",
+  "CPU",
+  "源码",
+  "GPU 实验",
+  "服务工程",
+  "复盘",
+  "交付",
+];
+
+function labCategoryForDay(day) {
+  if (day <= 5) return "CPU";
+  if (day === 6) return "GPU 实验";
+  if (day === 7) return "复盘";
+  if (day <= 14) return "源码";
+  if (day <= 21) return "GPU 实验";
+  if (day <= 25) return "服务工程";
+  if (day <= 27) return "服务工程";
+  return "交付";
+}
+
+function LabsView({ state, update }) {
+  const [filter, setFilter] = useState("全部");
+  const visibleDays = plan.filter(
+    (day) => filter === "全部" || labCategoryForDay(day.day) === filter,
+  );
+  const completed = Object.values(state.labDone).filter(Boolean).length;
+  const selected = plan[state.selectedDay - 1];
+  const lesson = courseForDay(selected.day);
+
+  function selectLab(day) {
+    update({ selectedDay: day });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  return (
+    <>
+      <section className="page-heading">
+        <div>
+          <div className="eyebrow">30 Day Lab Workspace</div>
+          <h1>配套 Lab 工作台</h1>
+          <p>
+            每个 Lab 都对应当天课程：先读讲义，再运行或实现，最后按验收标准记录产出。
+            这里不再手工录入孤立指标。
+          </p>
+        </div>
+        <div className="library-count">
+          <strong>
+            {completed}/{plan.length}
+          </strong>
+          <span>Lab 已完成</span>
+        </div>
+      </section>
+
+      <div className="lab-workspace">
+        <aside className="lab-catalog">
+          <div className="lab-catalog-heading">
+            <strong>30 个配套 Lab</strong>
+            <span>{visibleDays.length} 个</span>
+          </div>
+          <div className="lab-filter">
+            {LAB_FILTERS.map((item) => (
+              <button
+                type="button"
+                key={item}
+                aria-pressed={filter === item}
+                onClick={() => setFilter(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+          <div className="lab-catalog-list">
+            {visibleDays.map((day) => {
+              const dayLesson = courseForDay(day.day);
+              const done = Boolean(state.labDone[day.day]);
+              return (
+                <button
+                  className={`lab-catalog-item ${
+                    selected.day === day.day ? "is-active" : ""
+                  }`}
+                  type="button"
+                  key={day.day}
+                  onClick={() => selectLab(day.day)}
+                >
+                  <span className={`lab-status ${done ? "is-done" : ""}`}>
+                    {done ? <Check size={13} /> : String(day.day).padStart(2, "0")}
+                  </span>
+                  <span>
+                    <small>{labCategoryForDay(day.day)}</small>
+                    <strong>{dayLesson.lab.title}</strong>
+                  </span>
+                  <ChevronRight size={15} />
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        <main className="lab-workbench">
+          <CourseLesson
+            lesson={lesson}
+            done={Boolean(state.labDone[selected.day])}
+            onToggle={() =>
+              update({
+                labDone: {
+                  ...state.labDone,
+                  [selected.day]: !state.labDone[selected.day],
+                },
+              })
+            }
+          />
+          <section className="lab-record-section">
+            <div className="section-title">
+              <div>
+                <h2>本次实验记录</h2>
+                <span>保存命令、结果、异常和你的解释，不要只记最后一个数字</span>
+              </div>
+              <Terminal size={19} />
+            </div>
+            <textarea
+              value={state.labRecords[selected.day] || ""}
+              onChange={(event) =>
+                update({
+                  labRecords: {
+                    ...state.labRecords,
+                    [selected.day]: event.target.value,
+                  },
+                })
+              }
+              placeholder={`例如：\n运行命令：...\n结果：...\n我观察到：...\n还没解释清楚：...`}
+              rows={9}
+            />
+          </section>
+        </main>
+      </div>
     </>
   );
 }
