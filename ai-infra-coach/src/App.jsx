@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Activity,
-  BarChart3,
   BookOpen,
   BookOpenCheck,
   Brain,
@@ -13,8 +12,8 @@ import {
   Clock3,
   Cloud,
   CloudOff,
+  Code2,
   Copy,
-  Cpu,
   Download,
   ExternalLink,
   FlaskConical,
@@ -27,26 +26,26 @@ import {
   Mail,
   Pause,
   Play,
-  Plus,
   RotateCcw,
-  ServerCog,
+  Workflow,
   Square,
   Terminal,
-  Trash2,
   X,
 } from "lucide-react";
 import { courseForDay } from "./course";
 import { questionsForDay } from "./interview";
 import { phases, plan, taskId } from "./plan";
-import { allResources, resourcesForIds } from "./resources";
+import { allResources, resourcesForDay } from "./resources";
 import { authRedirectUrl, supabase, supabaseConfigured } from "./supabase";
 import { answerForTask } from "./taskAnswers";
 
-const STORAGE_KEY = "ai-infra-coach-v2";
+const STORAGE_KEY = "agent-harness-coach-v1";
+const CURRICULUM_ID = "agent-harness-v1";
 const LAB_REPO_URL =
-  "https://github.com/DuckInAShirt/llm-systems-learning-notes/tree/main/ai-infra-coach/labs";
+  "https://github.com/SWE-agent/mini-swe-agent";
 
 const emptyState = {
+  curriculumId: CURRICULUM_ID,
   selectedDay: 1,
   completed: {},
   notes: {},
@@ -68,6 +67,9 @@ function loadState() {
 }
 
 function normalizeState(candidate) {
+  if (candidate?.curriculumId !== CURRICULUM_ID) {
+    return { ...emptyState };
+  }
   return {
     ...emptyState,
     ...candidate,
@@ -312,11 +314,11 @@ function App() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">
-            <Cpu size={22} strokeWidth={1.8} />
+            <Workflow size={22} strokeWidth={1.8} />
           </span>
           <div>
-            <strong>AI Infra 30</strong>
-            <span>4×A30 · vLLM 推理主线</span>
+            <strong>Harness 30</strong>
+            <span>Agent Runtime · Eval · 生产落地</span>
           </div>
         </div>
 
@@ -329,14 +331,14 @@ function App() {
           />
           <TabButton
             active={tab === "roadmap"}
-            icon={<ServerCog size={17} />}
+            icon={<Workflow size={17} />}
             label="路线"
             onClick={() => setTab("roadmap")}
           />
           <TabButton
             active={tab === "experiments"}
             icon={<FlaskConical size={17} />}
-            label="Lab"
+            label="口述"
             onClick={() => setTab("experiments")}
           />
           <TabButton
@@ -374,7 +376,7 @@ function App() {
             className="icon-button"
             type="button"
             onClick={() =>
-              downloadJson("ai-infra-progress.json", {
+              downloadJson("agent-harness-progress.json", {
                 exportedAt: new Date().toISOString(),
                 ...state,
               })
@@ -618,7 +620,7 @@ function TodayView({
   );
   const questions = questionsForDay(day);
   const lesson = courseForDay(day.day);
-  const resources = resourcesForIds(lesson.resources);
+  const resources = resourcesForDay(day.day);
 
   return (
     <>
@@ -676,7 +678,7 @@ function TodayView({
           />
           <TaskSection
             title="课后巩固"
-            subtitle={`${formatMinutes(deepMinutes)} · 理解、代码、实验`}
+          subtitle={`${formatMinutes(deepMinutes)} · 理解、口述、评测`}
             tasks={day.deep}
             bucket="deep"
             day={day.day}
@@ -703,7 +705,7 @@ function TodayView({
             <div className="section-title">
               <div>
                 <h2>今日记录</h2>
-                <span>问题、实验现象、没有想通的因果链</span>
+                <span>不会的问题、追问、没有想通的因果链</span>
               </div>
             </div>
             <textarea
@@ -741,7 +743,7 @@ function CourseLesson({ lesson, done, onToggle }) {
       <div className="section-title course-heading">
         <div>
           <h2>本课讲义</h2>
-          <span>先建立概念，再用配套 Lab 验证</span>
+          <span>先建立概念，再用面试口述验收</span>
         </div>
         <BookOpen size={19} />
       </div>
@@ -766,7 +768,7 @@ function CourseLesson({ lesson, done, onToggle }) {
       <div className="lab-band">
         <div className="lab-heading">
           <div>
-            <span>配套实验</span>
+            <span>配套口述</span>
             <h3>{lesson.lab.title}</h3>
           </div>
           <div className="lab-heading-actions">
@@ -777,7 +779,7 @@ function CourseLesson({ lesson, done, onToggle }) {
               target="_blank"
               rel="noreferrer"
             >
-              Lab 文件
+              实践项目
               <ExternalLink size={14} />
             </a>
           </div>
@@ -829,7 +831,7 @@ function CourseLesson({ lesson, done, onToggle }) {
           onClick={onToggle}
         >
           {done ? <CheckCircle2 size={18} /> : <Square size={17} />}
-          {done ? "Lab 已完成" : "完成验收后标记 Lab"}
+          {done ? "口述已完成" : "完成验收后标记口述"}
         </button>
       </div>
     </section>
@@ -972,20 +974,20 @@ const STUDY_WINDOWS = [
 
 const INTERVIEW_GUIDES = {
   1: {
-    structure: "先给定义，再解释它影响哪段推理流程，最后落到 TTFT、ITL、吞吐或显存。",
-    followUps: ["输入长度或并发翻倍时会怎样？", "如何用一个小实验验证你的判断？"],
+    structure: "先区分模型 API、协议、Runtime 和 Harness，再沿一次工具调用讲主链路。",
+    followUps: ["失败或无限循环时由谁处理？", "这个抽象在主流框架中如何体现？"],
   },
   2: {
-    structure: "按入口、核心对象、状态变化、输出结果讲清源码主链路。",
-    followUps: ["它在 vLLM 源码里由哪个模块负责？", "取消、抢占或 OOM 时资源如何释放？"],
+    structure: "先给一个具体失败场景，再讲状态、权限、预算和恢复机制。",
+    followUps: ["有副作用的工具如何避免重复执行？", "Prompt Injection 下这套机制还安全吗？"],
   },
   3: {
-    structure: "按实验假设、控制变量、指标、结果和结论边界回答。",
-    followUps: ["怎样保证结果可复现？", "TPS 提升但 P99 变差时应该如何取舍？"],
+    structure: "按任务集、成功判据、Outcome、Trajectory、指标和失败归因回答。",
+    followUps: ["如何证明评测结果可信？", "Judge 与人工不一致时怎么办？"],
   },
   4: {
-    structure: "先明确流量与 SLO，再讲组件、容量、故障处理和工程取舍。",
-    followUps: ["系统过载时如何保护 GPU 服务？", "你会监控哪些指标并设置什么告警？"],
+    structure: "先明确任务、风险和 SLO，再讲执行、状态、工具、安全、观测和评测。",
+    followUps: ["长任务如何恢复和回滚？", "质量、延迟和成本冲突时如何决策？"],
   },
 };
 
@@ -1315,8 +1317,8 @@ function RoadmapView({ state, selectDay, progress }) {
       <section className="page-heading">
         <div>
           <div className="eyebrow">30 天路线</div>
-          <h1>从推理原理到可复现实验</h1>
-          <p>四个阶段只服务一个最终项目：4×A30 上的 vLLM 推理评测与源码分析。</p>
+          <h1>从 Agent Loop 到生产评测</h1>
+          <p>四个阶段覆盖 Harness 面试边界；mini-swe-agent 作为你独立推进的实践主线。</p>
         </div>
         <strong className="large-progress">{progress}%</strong>
       </section>
@@ -1393,23 +1395,17 @@ function RoadmapView({ state, selectDay, progress }) {
 
 const LAB_FILTERS = [
   "全部",
-  "CPU",
-  "源码",
-  "GPU 实验",
-  "服务工程",
-  "复盘",
-  "交付",
+  "Harness 基础",
+  "可靠执行",
+  "Agent 评测",
+  "生产与面试",
 ];
 
 function labCategoryForDay(day) {
-  if (day <= 5) return "CPU";
-  if (day === 6) return "GPU 实验";
-  if (day === 7) return "复盘";
-  if (day <= 14) return "源码";
-  if (day <= 21) return "GPU 实验";
-  if (day <= 25) return "服务工程";
-  if (day <= 27) return "服务工程";
-  return "交付";
+  if (day <= 7) return "Harness 基础";
+  if (day <= 14) return "可靠执行";
+  if (day <= 21) return "Agent 评测";
+  return "生产与面试";
 }
 
 function LabsView({ state, update }) {
@@ -1430,25 +1426,25 @@ function LabsView({ state, update }) {
     <>
       <section className="page-heading">
         <div>
-          <div className="eyebrow">30 Day Lab Workspace</div>
-          <h1>配套 Lab 工作台</h1>
+          <div className="eyebrow">30 Day Oral Practice</div>
+          <h1>面试口述工作台</h1>
           <p>
-            每个 Lab 都对应当天课程：先读讲义，再运行或实现，最后按验收标准记录产出。
-            这里不再手工录入孤立指标。
+            每天闭卷回答 5 道 Harness 高频题，再用失败场景和评测追问检验理解。
+            mini-swe-agent 实践单独推进，这里只负责八股覆盖与复习。
           </p>
         </div>
         <div className="library-count">
           <strong>
             {completed}/{plan.length}
           </strong>
-          <span>Lab 已完成</span>
+          <span>口述已完成</span>
         </div>
       </section>
 
       <div className="lab-workspace">
         <aside className="lab-catalog">
           <div className="lab-catalog-heading">
-            <strong>30 个配套 Lab</strong>
+            <strong>30 次配套口述</strong>
             <span>{visibleDays.length} 个</span>
           </div>
           <div className="lab-filter">
@@ -1506,10 +1502,10 @@ function LabsView({ state, update }) {
           <section className="lab-record-section">
             <div className="section-title">
               <div>
-                <h2>本次实验记录</h2>
-                <span>保存命令、结果、异常和你的解释，不要只记最后一个数字</span>
+                <h2>本次口述记录</h2>
+                <span>记录漏掉的要点、没有答住的追问和下一次复习重点</span>
               </div>
-              <Terminal size={19} />
+              <Code2 size={19} />
             </div>
             <textarea
               value={state.labRecords[selected.day] || ""}
@@ -1521,341 +1517,13 @@ function LabsView({ state, update }) {
                   },
                 })
               }
-              placeholder={`例如：\n运行命令：...\n结果：...\n我观察到：...\n还没解释清楚：...`}
+              placeholder={`例如：\n必答题：基本答出\n漏掉：tool_call_id 的作用\n追问：副作用工具如何重试\n下次复习：幂等键与 checkpoint`}
               rows={9}
             />
           </section>
         </main>
       </div>
     </>
-  );
-}
-
-const initialExperiment = {
-  label: "",
-  tp: 1,
-  concurrency: 1,
-  promptTokens: 512,
-  outputTokens: 128,
-  ttft: "",
-  tps: "",
-  p99: "",
-  memory: "",
-};
-
-function ExperimentsView({ experiments, onChange }) {
-  const [draft, setDraft] = useState(initialExperiment);
-  const [metric, setMetric] = useState("ttft");
-
-  function submit(event) {
-    event.preventDefault();
-    const numeric = ["tp", "concurrency", "promptTokens", "outputTokens", "ttft", "tps", "p99", "memory"];
-    const record = {
-      ...draft,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    numeric.forEach((key) => {
-      record[key] = Number(record[key]);
-    });
-    onChange([...experiments, record]);
-    setDraft((current) => ({
-      ...initialExperiment,
-      tp: current.tp,
-      promptTokens: current.promptTokens,
-      outputTokens: current.outputTokens,
-    }));
-  }
-
-  return (
-    <>
-      <section className="page-heading">
-        <div>
-          <div className="eyebrow">Benchmark Lab</div>
-          <h1>推理实验记录</h1>
-          <p>每条结果同时保存负载条件，避免留下无法解释的孤立数字。</p>
-        </div>
-        <button
-          className="secondary-action"
-          type="button"
-          onClick={() => downloadJson("ai-infra-experiments.json", experiments)}
-          disabled={!experiments.length}
-        >
-          <Download size={16} />
-          导出数据
-        </button>
-      </section>
-
-      <div className="experiment-layout">
-        <form className="experiment-form" onSubmit={submit}>
-          <div className="section-title">
-            <div>
-              <h2>新增结果</h2>
-              <span>同一组实验只改变一个变量</span>
-            </div>
-          </div>
-          <label className="wide-field">
-            <span>配置名称</span>
-            <input
-              required
-              value={draft.label}
-              onChange={(event) =>
-                setDraft({ ...draft, label: event.target.value })
-              }
-              placeholder="例如 baseline-tp1-c8"
-            />
-          </label>
-          <div className="form-grid">
-            <NumberField
-              label="TP"
-              value={draft.tp}
-              min={1}
-              onChange={(tp) => setDraft({ ...draft, tp })}
-            />
-            <NumberField
-              label="并发"
-              value={draft.concurrency}
-              min={1}
-              onChange={(concurrency) => setDraft({ ...draft, concurrency })}
-            />
-            <NumberField
-              label="输入 tokens"
-              value={draft.promptTokens}
-              min={1}
-              onChange={(promptTokens) => setDraft({ ...draft, promptTokens })}
-            />
-            <NumberField
-              label="输出 tokens"
-              value={draft.outputTokens}
-              min={1}
-              onChange={(outputTokens) => setDraft({ ...draft, outputTokens })}
-            />
-            <NumberField
-              label="TTFT (ms)"
-              value={draft.ttft}
-              min={0}
-              step="0.01"
-              required
-              onChange={(ttft) => setDraft({ ...draft, ttft })}
-            />
-            <NumberField
-              label="TPS"
-              value={draft.tps}
-              min={0}
-              step="0.01"
-              required
-              onChange={(tps) => setDraft({ ...draft, tps })}
-            />
-            <NumberField
-              label="P99 (ms)"
-              value={draft.p99}
-              min={0}
-              step="0.01"
-              required
-              onChange={(p99) => setDraft({ ...draft, p99 })}
-            />
-            <NumberField
-              label="显存 (GB)"
-              value={draft.memory}
-              min={0}
-              step="0.01"
-              required
-              onChange={(memory) => setDraft({ ...draft, memory })}
-            />
-          </div>
-          <button className="primary-action form-submit" type="submit">
-            <Plus size={17} />
-            添加结果
-          </button>
-        </form>
-
-        <section className="chart-section">
-          <div className="chart-header">
-            <div>
-              <h2>实验趋势</h2>
-              <span>{experiments.length} 条记录</span>
-            </div>
-            <div className="segmented metric-control">
-              {[
-                ["ttft", "TTFT"],
-                ["tps", "TPS"],
-                ["p99", "P99"],
-                ["memory", "显存"],
-              ].map(([value, label]) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-pressed={metric === value}
-                  onClick={() => setMetric(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <MetricChart data={experiments} metric={metric} />
-        </section>
-      </div>
-
-      <section className="experiment-table">
-        <div className="experiment-table-header">
-          <span>配置</span>
-          <span>TP / 并发</span>
-          <span>输入 / 输出</span>
-          <span>TTFT</span>
-          <span>TPS</span>
-          <span>P99</span>
-          <span>显存</span>
-          <span />
-        </div>
-        {experiments.length ? (
-          experiments.map((record) => (
-            <div className="experiment-row" key={record.id}>
-              <strong>{record.label}</strong>
-              <span>
-                {record.tp} / {record.concurrency}
-              </span>
-              <span>
-                {record.promptTokens} / {record.outputTokens}
-              </span>
-              <span>{record.ttft} ms</span>
-              <span>{record.tps}</span>
-              <span>{record.p99} ms</span>
-              <span>{record.memory} GB</span>
-              <button
-                className="icon-button danger"
-                type="button"
-                aria-label={`删除 ${record.label}`}
-                onClick={() =>
-                  onChange(experiments.filter((item) => item.id !== record.id))
-                }
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))
-        ) : (
-          <div className="empty-row">还没有实验记录</div>
-        )}
-      </section>
-    </>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  min,
-  step = 1,
-  required = false,
-}) {
-  return (
-    <label>
-      <span>{label}</span>
-      <input
-        type="number"
-        value={value}
-        min={min}
-        step={step}
-        required={required}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </label>
-  );
-}
-
-const metricLabels = {
-  ttft: "TTFT (ms)",
-  tps: "TPS",
-  p99: "P99 (ms)",
-  memory: "显存 (GB)",
-};
-
-function MetricChart({ data, metric }) {
-  const width = 760;
-  const height = 280;
-  const padding = { top: 26, right: 24, bottom: 52, left: 58 };
-
-  const points = useMemo(() => {
-    if (!data.length) return [];
-    const values = data.map((item) => Number(item[metric]) || 0);
-    const max = Math.max(...values, 1);
-    return data.map((item, index) => {
-      const x =
-        data.length === 1
-          ? width / 2
-          : padding.left +
-            (index / (data.length - 1)) *
-              (width - padding.left - padding.right);
-      const y =
-        padding.top +
-        ((max - Number(item[metric])) / max) *
-          (height - padding.top - padding.bottom);
-      return { x, y, item };
-    });
-  }, [data, metric]);
-
-  if (!data.length) {
-    return (
-      <div className="chart-empty">
-        <BarChart3 size={34} strokeWidth={1.4} />
-        <span>添加第一条基线结果</span>
-      </div>
-    );
-  }
-
-  const path = points.map((point) => `${point.x},${point.y}`).join(" ");
-  const values = data.map((item) => Number(item[metric]) || 0);
-  const max = Math.max(...values, 1);
-
-  return (
-    <svg
-      className="metric-chart"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label={`${metricLabels[metric]} 实验趋势`}
-    >
-      {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-        const y =
-          padding.top + ratio * (height - padding.top - padding.bottom);
-        const label = (max * (1 - ratio)).toFixed(max < 10 ? 1 : 0);
-        return (
-          <g key={ratio}>
-            <line
-              x1={padding.left}
-              x2={width - padding.right}
-              y1={y}
-              y2={y}
-              className="chart-grid-line"
-            />
-            <text x={padding.left - 10} y={y + 4} textAnchor="end">
-              {label}
-            </text>
-          </g>
-        );
-      })}
-      <polyline points={path} className="chart-line" />
-      {points.map((point, index) => (
-        <g key={point.item.id}>
-          <circle cx={point.x} cy={point.y} r="5" className="chart-dot" />
-          <text
-            x={point.x}
-            y={height - 25}
-            textAnchor="middle"
-            className="chart-x-label"
-          >
-            {index + 1}
-          </text>
-          <title>
-            {point.item.label}: {point.item[metric]} {metric === "memory" ? "GB" : metric === "tps" ? "" : "ms"}
-          </title>
-        </g>
-      ))}
-      <text x={padding.left} y={17} className="chart-axis-title">
-        {metricLabels[metric]}
-      </text>
-    </svg>
   );
 }
 
@@ -1868,8 +1536,8 @@ function ResourcesView() {
       <section className="page-heading">
         <div>
           <div className="eyebrow">Learning Library</div>
-          <h1>AI Infra 学习资料库</h1>
-          <p>已按 URL 去重。每天只需要先学主修资料，补充资料用于卡住时定向查阅。</p>
+          <h1>Agent Harness 学习资料库</h1>
+          <p>只保留与八股对应的官方文档、论文和基准；实践主线由你单独学习 mini-swe-agent。</p>
         </div>
         <div className="library-count">
           <strong>{resources.length}</strong>
@@ -1918,11 +1586,11 @@ function ReviewView({ state, onConfidence, selectDay }) {
       <section className="page-heading">
         <div>
           <div className="eyebrow">Interview Review</div>
-          <h1>150 道高频口述题</h1>
+          <h1>{questionRows.length} 道 Harness 高频口述题</h1>
           <p>先说结论与因果链，再对照参考答案、回答结构和常见追问。</p>
         </div>
         <div className="review-score">
-          <strong>{confident}/150</strong>
+          <strong>{confident}/{questionRows.length}</strong>
           <span>已掌握</span>
         </div>
       </section>

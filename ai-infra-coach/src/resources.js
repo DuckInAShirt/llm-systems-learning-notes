@@ -1,192 +1,145 @@
 export const resourceLibrary = {
-  vllmDocs: {
-    title: "vLLM 官方文档",
+  openaiTools: {
+    title: "OpenAI Function Calling / Tools",
     type: "文档",
-    url: "https://docs.vllm.ai/",
-    note: "查询当前版本的功能、配置和部署方式。",
+    url: "https://platform.openai.com/docs/guides/function-calling",
+    note: "理解 tool schema、tool call 和结果回填的基本协议。",
   },
-  vllmQuickstart: {
-    title: "vLLM Quickstart",
+  openaiAgents: {
+    title: "OpenAI Agents SDK",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/getting_started/quickstart/",
-    note: "离线推理和 OpenAI 兼容服务的最小入口。",
+    url: "https://openai.github.io/openai-agents-python/",
+    note: "从 Agent loop、handoff、guardrail、session 和 tracing 看 SDK 抽象。",
   },
-  vllmArchitecture: {
-    title: "vLLM Architecture Overview",
+  mcpSpec: {
+    title: "Model Context Protocol Specification",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/design/arch_overview/",
-    note: "API Server、Engine Core、Worker 与多进程拓扑。",
+    url: "https://modelcontextprotocol.io/specification/latest",
+    note: "重点看架构、生命周期、tools 与 transports，不需要一次读完全部规范。",
   },
-  vllmRepo: {
-    title: "vLLM 源码仓库",
-    type: "源码",
-    url: "https://github.com/vllm-project/vllm",
-    note: "固定 commit 后建立自己的源码索引。",
+  mcpTools: {
+    title: "MCP Tools",
+    type: "文档",
+    url: "https://modelcontextprotocol.io/specification/latest/server/tools",
+    note: "对照 tools/list、tools/call、name、description 和 inputSchema。",
   },
-  pagedPaper: {
-    title: "PagedAttention 论文",
+  reactPaper: {
+    title: "ReAct: Synergizing Reasoning and Acting",
     type: "论文",
-    url: "https://arxiv.org/abs/2309.06180",
-    note: "重点阅读 KV Cache 浪费、block table 和实验设计。",
+    url: "https://arxiv.org/abs/2210.03629",
+    note: "先读摘要和方法图，理解 Thought、Action、Observation 的循环。",
   },
-  vllmTalk: {
-    title: "Accelerating LLM Inference with vLLM",
-    type: "视频",
-    url: "https://www.youtube.com/watch?v=qBFENFjKE-M",
-    note: "vLLM 核心设计和 PagedAttention 的项目讲解。",
-  },
-  inferenceVideo: {
-    title: "vLLM、KV Cache 与 Continuous Batching",
-    type: "视频",
-    url: "https://www.youtube.com/watch?v=DNrIu_EZz5k",
-    note: "适合第一周建立推理引擎直觉。",
-  },
-  servingBenchmark: {
-    title: "vLLM Online Serving Benchmark",
+  langgraph: {
+    title: "LangGraph Concepts",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/benchmarking/cli/",
-    note: "查看 TTFT、ITL、TPOT 等指标和命令参数。",
+    url: "https://langchain-ai.github.io/langgraph/concepts/",
+    note: "用图、状态、持久化和中断理解有状态 Agent 编排。",
   },
-  benchmarkDataset: {
-    title: "vLLM Benchmark Datasets",
+  anthropicBuilding: {
+    title: "Building Effective Agents",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/benchmarking/cli/",
-    note: "理解 ShareGPT 等请求数据如何被采样。",
+    url: "https://www.anthropic.com/research/building-effective-agents",
+    note: "区分 Workflow 与 Agent，并阅读常见编排模式和适用边界。",
   },
-  prefixCaching: {
-    title: "Automatic Prefix Caching",
+  anthropicContext: {
+    title: "Effective Context Engineering for AI Agents",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/",
-    note: "共享前缀如何复用已经计算的 KV Cache。",
+    url: "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+    note: "关注上下文选择、压缩、工具结果和长任务管理。",
   },
-  quantization: {
-    title: "vLLM Quantization",
+  openaiEval: {
+    title: "OpenAI Evaluation Best Practices",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/features/quantization/",
-    note: "比较不同量化格式、硬件支持和适用场景。",
+    url: "https://platform.openai.com/docs/guides/evaluation-best-practices",
+    note: "掌握任务定义、数据集、评判标准和持续评测闭环。",
   },
-  kvQuantization: {
-    title: "Quantized KV Cache",
+  agentsEval: {
+    title: "OpenAI Agent Evals",
     type: "文档",
-    url: "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/",
-    note: "区分权重量化与 KV Cache 量化。",
+    url: "https://platform.openai.com/docs/guides/agent-evals",
+    note: "重点理解 trace grading、workflow-level errors 与回归评测。",
   },
-  ncclOverview: {
-    title: "NCCL 官方概览",
+  judgePaper: {
+    title: "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+    type: "论文",
+    url: "https://arxiv.org/abs/2306.05685",
+    note: "关注 position、verbosity、self-enhancement 等 Judge 偏差。",
+  },
+  swebench: {
+    title: "SWE-bench",
     type: "文档",
-    url: "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/overview.html",
-    note: "理解 NCCL 在多 GPU 集合通信中的位置。",
+    url: "https://www.swebench.com/",
+    note: "理解真实仓库 issue、环境复现、补丁与测试判分。",
   },
-  ncclCollectives: {
-    title: "NCCL Collective Operations",
-    type: "文档",
-    url: "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html",
-    note: "AllReduce、AllGather、ReduceScatter 的官方定义。",
+  swebenchPaper: {
+    title: "SWE-bench 论文",
+    type: "论文",
+    url: "https://arxiv.org/abs/2310.06770",
+    note: "阅读任务构造、执行环境、测试验证与基准局限。",
   },
-  ncclVideo: {
-    title: "NCCL Lecture",
-    type: "视频",
-    url: "https://www.youtube.com/watch?v=T22e3fgit-A",
-    note: "从拓扑和算法理解多 GPU 通信。",
-  },
-  nvidiaMultiGpuVideo: {
-    title: "NVIDIA Multi-GPU Communication",
-    type: "视频",
-    url: "https://www.youtube.com/watch?v=kyQtbyR536I",
-    note: "NVIDIA GTC 的多 GPU 通信体系讲解。",
-  },
-  nsightSystems: {
-    title: "NVIDIA Nsight Systems",
-    type: "文档",
-    url: "https://docs.nvidia.com/nsight-systems/UserGuide/index.html",
-    note: "观察 CPU 调度、CUDA Kernel 与通信时间线。",
-  },
-  rayServeLlm: {
-    title: "Ray Serve LLM",
-    type: "文档",
-    url: "https://docs.ray.io/en/latest/serve/llm/index.html",
-    note: "了解推理引擎外面的部署、路由和扩缩容层。",
-  },
-  rayProduction: {
-    title: "Ray Serve Production Guide",
-    type: "文档",
-    url: "https://docs.ray.io/en/latest/serve/production-guide/index.html",
-    note: "部署、监控、KubeRay 和生产配置。",
-  },
-  rayArchitecture: {
-    title: "Ray Serve LLM Architecture",
-    type: "文档",
-    url: "https://docs.ray.io/en/latest/serve/llm/architecture/overview.html",
-    note: "模型副本、路由与分布式服务组件。",
-  },
-  kubernetesGpu: {
-    title: "Kubernetes GPU Scheduling",
-    type: "文档",
-    url: "https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/",
-    note: "GPU 资源声明、设备插件和 Pod 调度基础。",
-  },
-  sglangDocs: {
-    title: "SGLang 官方文档",
-    type: "文档",
-    url: "https://docs.sglang.io/",
-    note: "RadixAttention、prefix caching 与多 GPU 推理入口。",
-  },
-  sglangBenchmark: {
-    title: "SGLang Benchmark and Profiling",
-    type: "文档",
-    url: "https://docs.sglang.io/docs/developer_guide/benchmark_and_profiling",
-    note: "使用一致指标对比 vLLM 与 SGLang。",
-  },
-  sglangPd: {
-    title: "SGLang Prefill-Decode Disaggregation",
-    type: "文档",
-    url: "https://docs.sglang.io/docs/advanced_features/pd_disaggregation",
-    note: "扩展阅读 prefill 与 decode 分离部署。",
-  },
-  sglangRepo: {
-    title: "SGLang 源码仓库",
+  miniSweAgent: {
+    title: "mini-swe-agent",
     type: "源码",
-    url: "https://github.com/sgl-project/sglang",
-    note: "对照 Scheduler、缓存和 Worker 入口。",
+    url: "https://github.com/SWE-agent/mini-swe-agent",
+    note: "仅作为你自己的实践主线；八股课程用它映射 Runtime、工具和 Coding Agent 评测概念。",
+  },
+  sweAgent: {
+    title: "SWE-agent",
+    type: "源码",
+    url: "https://github.com/SWE-agent/SWE-agent",
+    note: "用于对照更完整的 Coding Agent Harness 和评测流程。",
+  },
+  inspectAi: {
+    title: "Inspect AI",
+    type: "文档",
+    url: "https://inspect.aisi.org.uk/",
+    note: "学习任务、数据集、solver、scorer、sandbox 和评测日志的组合方式。",
+  },
+  promptInjection: {
+    title: "OWASP LLM Prompt Injection Prevention",
+    type: "文档",
+    url: "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+    note: "关注间接注入、最小权限、输出处理和 HITL 防护。",
+  },
+  owaspAgent: {
+    title: "OWASP Agentic AI Threats and Mitigations",
+    type: "文档",
+    url: "https://genai.owasp.org/",
+    note: "按工具滥用、记忆投毒、权限和供应链问题补安全边界。",
+  },
+  opentelemetry: {
+    title: "OpenTelemetry Traces",
+    type: "文档",
+    url: "https://opentelemetry.io/docs/concepts/signals/traces/",
+    note: "理解 trace、span、context propagation，再映射到 Agent step。",
   },
 };
 
-const week1 = ["inferenceVideo", "vllmDocs", "pagedPaper"];
-const week2 = ["vllmArchitecture", "vllmRepo", "vllmTalk"];
-const week3 = ["servingBenchmark", "benchmarkDataset", "nsightSystems"];
-const week4 = ["rayServeLlm", "rayProduction", "sglangDocs"];
-
-const resourceGuides = {
-  vllmDocs: "遇到参数或概念时查，不需要从首页顺序读完。",
-  vllmQuickstart: "先完成离线推理，再启动 OpenAI 兼容服务；每条命令都亲手运行。",
-  vllmArchitecture: "先看架构图和组件职责，再带着当天的源码问题阅读。",
-  vllmRepo: "固定 commit 后，从课程指定的关键词搜索，不要从目录第一行开始读。",
-  pagedPaper: "先读摘要、Figure 1 和系统设计，再回头看实验；第一次不用啃完公式。",
-  vllmTalk: "先建立系统直觉，记下不懂的三个词，再回到课程讲义查。",
-  inferenceVideo: "重点听 prefill、decode、KV Cache 和 batching，暂时跳过部署细节。",
-  servingBenchmark: "先确认请求分布和指标口径，再复制命令；不要只抄最终 TPS。",
-  prefixCaching: "重点看命中条件和限制，随后完成 Day 19 的命中/不命中对照实验。",
-  quantization: "先看硬件支持表和格式差异，再选择与你的 A30 兼容的模型。",
-  kvQuantization: "只用于区分权重量化和 KV 量化，配合 Day 2/20 阅读。",
-  ncclOverview: "先理解 rank、communicator 和 collective 三个词，再进入具体通信操作。",
-  ncclCollectives: "配合 Day 13 的 NumPy 切分实验，重点看 AllReduce、AllGather、ReduceScatter。",
-  ncclVideo: "看完后画一张两卡通信图，不要求记住所有拓扑算法。",
-  nvidiaMultiGpuVideo: "带着 TP=1/2/4 的实验结果看，关注 PCIe/NVLink 对通信的影响。",
-  nsightSystems: "先学会打开时间线和识别 CUDA/NCCL 区段，不需要一次掌握全部功能。",
-  rayServeLlm: "先区分 Ray Serve 与 vLLM 的职责，再看部署示例。",
-  rayProduction: "Day 24-28 按故障、监控和生产部署问题定向查询。",
-  rayArchitecture: "配合 Day 26 架构图阅读，只追踪一次请求到一个模型副本。",
-  kubernetesGpu: "只先掌握设备插件、resource limit 和 Pod/GPU 分配。",
-  sglangDocs: "先跑通最小服务，再看 RadixAttention，不要同时比较所有特性。",
-  sglangBenchmark: "复用自己的 benchmark 协议，重点检查两边默认参数是否一致。",
-  sglangPd: "属于扩展阅读，完成基础对比后再看 prefill/decode 分离。",
-  sglangRepo: "从 server、scheduler 和 cache 三个关键词建立源码入口。",
+const guides = {
+  openaiTools: "配合 Day 2/5，手画 assistant tool call 与 tool result 消息序列。",
+  openaiAgents: "配合 Day 4/7/22，只看运行循环、guardrail、session 和 trace 四个入口。",
+  mcpSpec: "配合 Day 3，先读架构和生命周期，再看 tools；不用背完整规范。",
+  mcpTools: "配合 Day 2/3，把 MCP inputSchema 与模型工具 Schema 并排比较。",
+  reactPaper: "配合 Day 6，先能解释为什么观察结果会改变下一步行动。",
+  langgraph: "配合 Day 4/14/23，重点看 state、persistence、interrupt。",
+  anthropicBuilding: "配合 Day 1/6/7，优先读 workflow/agent 区别与五种组合模式。",
+  anthropicContext: "配合 Day 10/11，整理上下文选择、压缩与长期任务策略。",
+  openaiEval: "配合 Day 15，按目标、数据、指标和持续评测做一页模板。",
+  agentsEval: "配合 Day 16/19/20，重点看 trace 如何帮助定位 workflow 错误。",
+  judgePaper: "配合 Day 18，只需掌握 Judge 的常见偏差和校准方法。",
+  swebench: "配合 Day 21，弄清任务环境与测试判分，而不是追榜单数字。",
+  swebenchPaper: "配合 Day 21，读数据构造、评测过程与 validity threats。",
+  miniSweAgent: "实践由你自己推进；课程只要求能把代码映射到 Harness 八股。",
+  sweAgent: "当 mini-swe-agent 的抽象过薄时再定向对照，不顺序通读。",
+  inspectAi: "配合 Day 15-20，观察 eval task、solver、scorer 和 sandbox 的职责。",
+  promptInjection: "配合 Day 11/13，把每种威胁对应到代码级防护。",
+  owaspAgent: "配合 Day 13/29，用于补齐系统设计中的安全检查项。",
+  opentelemetry: "配合 Day 22，画出一个 Agent task 下的 model/tool 子 span。",
 };
 
-const typeDefaults = {
+const defaults = {
   文档: { time: "20-30 分钟", difficulty: "入门" },
-  视频: { time: "20-40 分钟", difficulty: "入门" },
-  论文: { time: "40-60 分钟", difficulty: "进阶" },
+  论文: { time: "30-50 分钟", difficulty: "进阶" },
   源码: { time: "30-60 分钟", difficulty: "进阶" },
 };
 
@@ -196,72 +149,58 @@ function buildResource(id, order) {
   return {
     id,
     ...resource,
-    ...typeDefaults[resource.type],
-    studyGuide: resourceGuides[id] || resource.note,
+    ...defaults[resource.type],
+    studyGuide: guides[id] || resource.note,
     order,
     role: order === 1 ? "主修" : "补充",
   };
 }
 
-export const dailyResourceIds = {
-  1: ["inferenceVideo", "vllmTalk", "vllmDocs"],
-  2: ["pagedPaper", "inferenceVideo", "kvQuantization"],
-  3: ["inferenceVideo", "vllmTalk", "vllmArchitecture"],
-  4: ["pagedPaper", "vllmTalk", "vllmArchitecture"],
-  5: ["servingBenchmark", "benchmarkDataset", "vllmDocs"],
-  6: ["vllmQuickstart", "servingBenchmark", "nsightSystems"],
-  7: week1,
-  8: ["vllmArchitecture", "vllmRepo", "vllmDocs"],
-  9: ["vllmArchitecture", "vllmRepo", "vllmQuickstart"],
-  10: ["vllmArchitecture", "vllmRepo", "vllmTalk"],
-  11: ["pagedPaper", "vllmRepo", "vllmArchitecture"],
-  12: ["vllmRepo", "vllmArchitecture", "nsightSystems"],
-  13: ["ncclOverview", "ncclCollectives", "ncclVideo"],
-  14: week2,
-  15: ["servingBenchmark", "benchmarkDataset", "nsightSystems"],
-  16: ["servingBenchmark", "nsightSystems", "vllmDocs"],
-  17: ["servingBenchmark", "pagedPaper", "nsightSystems"],
-  18: ["ncclOverview", "ncclCollectives", "nvidiaMultiGpuVideo"],
-  19: ["prefixCaching", "servingBenchmark", "pagedPaper"],
-  20: ["quantization", "kvQuantization", "servingBenchmark"],
-  21: week3,
-  22: ["vllmQuickstart", "rayServeLlm", "vllmArchitecture"],
-  23: ["rayArchitecture", "rayProduction", "servingBenchmark"],
-  24: ["nsightSystems", "rayProduction", "rayArchitecture"],
-  25: ["rayProduction", "nsightSystems", "vllmDocs"],
-  26: ["kubernetesGpu", "rayServeLlm", "rayProduction"],
-  27: ["sglangDocs", "sglangBenchmark", "sglangRepo"],
-  28: ["vllmRepo", "servingBenchmark", "rayProduction"],
-  29: ["vllmArchitecture", "pagedPaper", "ncclOverview"],
-  30: [...week4, "sglangPd"],
+const dailyResourceIds = {
+  1: ["anthropicBuilding", "openaiAgents"],
+  2: ["openaiTools", "mcpTools"],
+  3: ["mcpSpec", "mcpTools"],
+  4: ["openaiAgents", "langgraph"],
+  5: ["openaiTools", "openaiAgents"],
+  6: ["reactPaper", "anthropicBuilding"],
+  7: ["anthropicBuilding", "langgraph", "openaiAgents"],
+  8: ["anthropicBuilding", "langgraph"],
+  9: ["openaiTools", "mcpTools"],
+  10: ["anthropicContext", "langgraph"],
+  11: ["anthropicContext", "promptInjection"],
+  12: ["langgraph", "openaiAgents"],
+  13: ["promptInjection", "owaspAgent"],
+  14: ["langgraph", "openaiAgents"],
+  15: ["openaiEval", "inspectAi"],
+  16: ["agentsEval", "inspectAi"],
+  17: ["openaiEval", "inspectAi"],
+  18: ["judgePaper", "openaiEval"],
+  19: ["agentsEval", "inspectAi"],
+  20: ["openaiEval", "agentsEval"],
+  21: ["swebench", "swebenchPaper", "miniSweAgent"],
+  22: ["opentelemetry", "openaiAgents"],
+  23: ["langgraph", "openaiAgents"],
+  24: ["openaiAgents", "opentelemetry"],
+  25: ["openaiEval", "agentsEval"],
+  26: ["anthropicBuilding", "openaiAgents"],
+  27: ["reactPaper", "openaiEval"],
+  28: ["openaiEval", "opentelemetry"],
+  29: ["owaspAgent", "langgraph", "openaiAgents"],
+  30: ["anthropicBuilding", "openaiEval", "miniSweAgent"],
 };
 
 export function resourcesForIds(ids) {
-  const seenUrls = new Set();
+  const seen = new Set();
   return (ids || [])
     .map((id, index) => buildResource(id, index + 1))
     .filter((resource) => {
-      if (!resource || seenUrls.has(resource.url)) return false;
-      seenUrls.add(resource.url);
-      return true;
-    })
-    .map((resource, index) => ({
-      ...resource,
-      order: index + 1,
-      role: index === 0 ? "主修" : "补充",
-    }));
-}
-
-export const allResources = (() => {
-  const seenUrls = new Set();
-  return Object.keys(resourceLibrary)
-    .map((id, index) => buildResource(id, index + 1))
-    .filter((resource) => {
-      if (!resource || seenUrls.has(resource.url)) return false;
-      seenUrls.add(resource.url);
+      if (!resource || seen.has(resource.url)) return false;
+      seen.add(resource.url);
       return true;
     });
-})();
+}
+
+export const allResources = resourcesForIds(Object.keys(resourceLibrary));
 
 export function resourcesForDay(day) {
   return resourcesForIds(dailyResourceIds[day] || []);

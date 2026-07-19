@@ -1,4 +1,4 @@
-name: Deploy AI Infra Coach
+name: Deploy Agent Harness Coach
 
 on:
   push:
