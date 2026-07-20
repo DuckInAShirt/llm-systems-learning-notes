@@ -738,6 +738,8 @@ function TodayView({
 }
 
 function CourseLesson({ lesson, done, onToggle }) {
+  const content = lesson.content;
+
   return (
     <section className="course-section">
       <div className="section-title course-heading">
@@ -749,19 +751,72 @@ function CourseLesson({ lesson, done, onToggle }) {
       </div>
 
       <div className="lesson-band">
-        <span className="lesson-module">{lesson.module}</span>
+        <div className="lesson-kicker">
+          <span className="lesson-module">{lesson.module}</span>
+          <span className="lesson-duration">
+            <Clock3 size={14} />
+            {content.duration}
+          </span>
+        </div>
         <h3>{lesson.lessonTitle}</h3>
-        <p>{lesson.lesson}</p>
-        <div className="key-point-grid">
-          {lesson.keyPoints.map((item) => (
-            <article className="key-point" key={item.title}>
-              <Lightbulb size={17} />
-              <div>
-                <strong>{item.title}</strong>
-                <p>{item.body}</p>
-              </div>
+        <p className="lesson-intro">{content.intro}</p>
+
+        <div className="lesson-objectives">
+          <span>学完你应该能</span>
+          <ul>
+            {content.objectives.map((objective) => (
+              <li key={objective}>
+                <Check size={15} />
+                {objective}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="lesson-article">
+          {content.sections.map((chapter) => (
+            <article className="lesson-chapter" key={chapter.title}>
+              <h4>{chapter.title}</h4>
+              {chapter.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              {chapter.bullets && (
+                <ul>
+                  {chapter.bullets.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {chapter.diagram && (
+                <div className="lesson-diagram" aria-label="流程示意">
+                  <span>流程示意</span>
+                  <pre>{chapter.diagram}</pre>
+                </div>
+              )}
+              {chapter.code && <CodeBlock value={chapter.code} />}
             </article>
           ))}
+        </div>
+
+        <div className="lesson-review-grid">
+          <aside className="lesson-pitfalls">
+            <div>
+              <Lightbulb size={17} />
+              <strong>常见误区</strong>
+            </div>
+            <ul>
+              {content.pitfalls.map((pitfall) => (
+                <li key={pitfall}>{pitfall}</li>
+              ))}
+            </ul>
+          </aside>
+          <aside className="lesson-checkpoint">
+            <div>
+              <ListChecks size={17} />
+              <strong>理解验收</strong>
+            </div>
+            <p>{content.checkpoint}</p>
+          </aside>
         </div>
       </div>
 
@@ -1258,7 +1313,7 @@ function DailyResources({ resources }) {
       <div className="section-title">
         <div>
           <h2>今日资料</h2>
-          <span>先看主修，再按需要打开补充；每份资料都对应今天的 Lab</span>
+          <span>讲义已经整理核心知识；这里用于核对原始资料和继续深挖</span>
         </div>
         <LibraryBig size={19} />
       </div>
@@ -1302,6 +1357,11 @@ function ResourceRow({ resource, showOrder = false, index = 0 }) {
       <span className="resource-copy">
         <strong>{resource.title}</strong>
         <small>{resource.studyGuide || resource.note}</small>
+        {resource.checkpoint && (
+          <small className="resource-checkpoint">
+            看完回答：{resource.checkpoint}
+          </small>
+        )}
         <span className="resource-meta">
           {resource.difficulty} · {resource.time}
         </span>

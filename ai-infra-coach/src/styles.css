@@ -476,8 +476,15 @@ h1 {
 }
 
 .lesson-band {
-  padding: 19px 0 22px;
+  padding: 22px 0 28px;
   border-top: 1px solid var(--border-strong);
+}
+
+.lesson-kicker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .lesson-module {
@@ -490,6 +497,15 @@ h1 {
   font-weight: 700;
 }
 
+.lesson-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .lesson-band h3,
 .lab-heading h3 {
   margin: 10px 0 8px;
@@ -497,13 +513,155 @@ h1 {
   line-height: 1.35;
 }
 
-.lesson-band > p,
+.lesson-intro,
 .lab-goal {
   max-width: 850px;
   margin-bottom: 18px;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.8;
+}
+
+.lesson-objectives {
+  margin: 22px 0 28px;
+  padding: 15px 17px;
+  background: var(--green-soft);
+  border-left: 3px solid var(--green);
+}
+
+.lesson-objectives > span {
+  color: var(--green-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.lesson-objectives ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson-objectives li {
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr);
+  gap: 7px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.lesson-objectives li svg {
+  color: var(--green);
+  margin-top: 2px;
+}
+
+.lesson-article {
+  display: grid;
+  gap: 30px;
+}
+
+.lesson-chapter h4 {
+  margin: 0 0 12px;
+  padding-bottom: 9px;
+  font-size: 17px;
+  line-height: 1.4;
+  border-bottom: 1px solid var(--border);
+}
+
+.lesson-chapter > p,
+.lesson-chapter > ul {
+  max-width: 860px;
+  color: #39443e;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.lesson-chapter > p {
+  margin-bottom: 12px;
+}
+
+.lesson-chapter > ul {
+  display: grid;
+  gap: 7px;
+  margin: 13px 0 0;
+  padding-left: 21px;
+}
+
+.lesson-diagram {
+  max-width: 860px;
+  margin-top: 15px;
+  padding: 13px 15px 15px;
+  background: #202824;
+  border-radius: 5px;
+}
+
+.lesson-diagram > span {
+  color: #8ed7ad;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.lesson-diagram pre {
+  overflow-x: auto;
+  margin: 9px 0 0;
+  color: #d5e8dc;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.lesson-review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.lesson-pitfalls,
+.lesson-checkpoint {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.lesson-pitfalls {
+  background: var(--yellow-soft);
+  border-color: #ead9a8;
+}
+
+.lesson-checkpoint {
+  background: var(--cyan-soft);
+  border-color: #b9dfe3;
+}
+
+.lesson-pitfalls > div,
+.lesson-checkpoint > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+  font-size: 13px;
+}
+
+.lesson-pitfalls ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+  color: #5f542e;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.lesson-checkpoint p {
+  margin: 0;
+  color: #315c63;
+  font-size: 12px;
+  line-height: 1.7;
 }
 
 .key-point-grid {
@@ -1345,6 +1503,11 @@ h1 {
   line-height: 1.5;
 }
 
+.resource-copy .resource-checkpoint {
+  color: #315c63;
+  font-weight: 600;
+}
+
 .resource-meta {
   color: var(--cyan);
   font-size: 10px;
@@ -2111,6 +2274,10 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .lesson-objectives ul {
+    grid-template-columns: 1fr;
+  }
+
   .right-rail {
     position: static;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2198,6 +2365,10 @@ h1 {
 
   .lab-band {
     padding: 16px;
+  }
+
+  .lesson-review-grid {
+    grid-template-columns: 1fr;
   }
 
   .lab-heading {

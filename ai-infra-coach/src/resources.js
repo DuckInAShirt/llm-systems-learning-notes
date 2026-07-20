@@ -2,32 +2,37 @@ export const resourceLibrary = {
   openaiTools: {
     title: "OpenAI Function Calling / Tools",
     type: "文档",
-    url: "https://platform.openai.com/docs/guides/function-calling",
+    url: "https://developers.openai.com/api/docs/guides/function-calling",
     note: "理解 tool schema、tool call 和结果回填的基本协议。",
+    checkpoint: "模型和 Harness 在工具调用中分别负责什么？",
   },
   openaiAgents: {
     title: "OpenAI Agents SDK",
     type: "文档",
     url: "https://openai.github.io/openai-agents-python/",
     note: "从 Agent loop、handoff、guardrail、session 和 tracing 看 SDK 抽象。",
+    checkpoint: "一个 SDK 要提供哪些能力，才能承载完整 Agent Loop？",
   },
   mcpSpec: {
     title: "Model Context Protocol Specification",
     type: "文档",
     url: "https://modelcontextprotocol.io/specification/latest",
     note: "重点看架构、生命周期、tools 与 transports，不需要一次读完全部规范。",
+    checkpoint: "Host、Client、Server 三者如何连接？",
   },
   mcpTools: {
     title: "MCP Tools",
     type: "文档",
     url: "https://modelcontextprotocol.io/specification/latest/server/tools",
     note: "对照 tools/list、tools/call、name、description 和 inputSchema。",
+    checkpoint: "MCP 工具如何被发现和调用？",
   },
   reactPaper: {
     title: "ReAct: Synergizing Reasoning and Acting",
     type: "论文",
     url: "https://arxiv.org/abs/2210.03629",
     note: "先读摘要和方法图，理解 Thought、Action、Observation 的循环。",
+    checkpoint: "Observation 为什么会改变 Agent 的下一步？",
   },
   langgraph: {
     title: "LangGraph Concepts",
@@ -38,8 +43,9 @@ export const resourceLibrary = {
   anthropicBuilding: {
     title: "Building Effective Agents",
     type: "文档",
-    url: "https://www.anthropic.com/research/building-effective-agents",
+    url: "https://www.anthropic.com/engineering/building-effective-agents",
     note: "区分 Workflow 与 Agent，并阅读常见编排模式和适用边界。",
+    checkpoint: "何时应该用固定 Workflow，何时才需要 Agent？",
   },
   anthropicContext: {
     title: "Effective Context Engineering for AI Agents",
@@ -52,6 +58,7 @@ export const resourceLibrary = {
     type: "文档",
     url: "https://platform.openai.com/docs/guides/evaluation-best-practices",
     note: "掌握任务定义、数据集、评判标准和持续评测闭环。",
+    checkpoint: "为什么先定义成功标准，再选择指标？",
   },
   agentsEval: {
     title: "OpenAI Agent Evals",
@@ -70,6 +77,7 @@ export const resourceLibrary = {
     type: "文档",
     url: "https://www.swebench.com/",
     note: "理解真实仓库 issue、环境复现、补丁与测试判分。",
+    checkpoint: "SWE-bench 为什么能用测试客观判断任务是否成功？",
   },
   swebenchPaper: {
     title: "SWE-bench 论文",
@@ -112,6 +120,35 @@ export const resourceLibrary = {
     type: "文档",
     url: "https://opentelemetry.io/docs/concepts/signals/traces/",
     note: "理解 trace、span、context propagation，再映射到 Agent step。",
+    checkpoint: "一个 Agent Task 的模型和工具调用应如何组成 Trace？",
+  },
+  hfAgents: {
+    title: "Hugging Face Agents Course",
+    type: "文档",
+    url: "https://huggingface.co/learn/agents-course/unit0/introduction",
+    note: "用课程 Unit 0-1 补齐 Agent、工具、Think-Act-Observe 的直观认识。",
+    checkpoint: "Agent 与普通 LLM 调用的最小差别是什么？",
+  },
+  ibmAgentsVideo: {
+    title: "IBM: What Are AI Agents?",
+    type: "视频",
+    url: "https://www.youtube.com/watch?v=F8NKVhkZZWI",
+    note: "先看完整体概念，再把视频中的感知、决策、行动映射到 Harness 主链路。",
+    checkpoint: "模型、工具和外部环境如何形成闭环？",
+  },
+  ngAgenticVideo: {
+    title: "Andrew Ng: AI Agentic Workflows",
+    type: "视频",
+    url: "https://www.youtube.com/watch?v=sal78ACtGTc",
+    note: "重点理解 Reflection、Tool Use、Planning 与 Multi-Agent 四种设计模式。",
+    checkpoint: "Reflection 为什么最好搭配外部反馈或 Verifier？",
+  },
+  mcpWorkshopVideo: {
+    title: "Anthropic: MCP Workshop",
+    type: "视频",
+    url: "https://www.youtube.com/watch?v=kQmXtrmQ5Zg",
+    note: "跟着演示观察 Server 暴露能力、Client 发现工具和发起调用的过程。",
+    checkpoint: "MCP 解决了哪一段连接，哪些事仍由 Agent Runtime 负责？",
   },
 };
 
@@ -135,6 +172,10 @@ const guides = {
   promptInjection: "配合 Day 11/13，把每种威胁对应到代码级防护。",
   owaspAgent: "配合 Day 13/29，用于补齐系统设计中的安全检查项。",
   opentelemetry: "配合 Day 22，画出一个 Agent task 下的 model/tool 子 span。",
+  hfAgents: "配合 Day 1/7，阅读 Unit 0 和 Unit 1 的 Agent、Tools、Think-Act-Observe 小节。",
+  ibmAgentsVideo: "配合 Day 1，观看整体概念部分，并把术语写回当天主链路图。",
+  ngAgenticVideo: "配合 Day 6/26，记录四种 Agentic 模式各自解决的问题。",
+  mcpWorkshopVideo: "配合 Day 3，重点看工具发现和调用演示，不必跟着安装环境。",
 };
 
 const defaults = {
@@ -157,13 +198,13 @@ function buildResource(id, order) {
 }
 
 const dailyResourceIds = {
-  1: ["anthropicBuilding", "openaiAgents"],
+  1: ["anthropicBuilding", "ibmAgentsVideo", "hfAgents"],
   2: ["openaiTools", "mcpTools"],
-  3: ["mcpSpec", "mcpTools"],
+  3: ["mcpSpec", "mcpWorkshopVideo", "mcpTools"],
   4: ["openaiAgents", "langgraph"],
   5: ["openaiTools", "openaiAgents"],
-  6: ["reactPaper", "anthropicBuilding"],
-  7: ["anthropicBuilding", "langgraph", "openaiAgents"],
+  6: ["reactPaper", "ngAgenticVideo", "anthropicBuilding"],
+  7: ["hfAgents", "anthropicBuilding", "langgraph"],
   8: ["anthropicBuilding", "langgraph"],
   9: ["openaiTools", "mcpTools"],
   10: ["anthropicContext", "langgraph"],
@@ -182,7 +223,7 @@ const dailyResourceIds = {
   23: ["langgraph", "openaiAgents"],
   24: ["openaiAgents", "opentelemetry"],
   25: ["openaiEval", "agentsEval"],
-  26: ["anthropicBuilding", "openaiAgents"],
+  26: ["anthropicBuilding", "ngAgenticVideo", "openaiAgents"],
   27: ["reactPaper", "openaiEval"],
   28: ["openaiEval", "opentelemetry"],
   29: ["owaspAgent", "langgraph", "openaiAgents"],
