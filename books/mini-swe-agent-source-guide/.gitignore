@@ -1,0 +1,10 @@
+# 官方 mini-swe-agent 源码（第三方，有自己的 git，可自行 clone，不纳入本仓库）
+mini-swe-agent/
+
+# 运行/缓存产物
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# notebook 执行检查点
+.ipynb_checkpoints/

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>mini-swe-agent 三层交互流程（hello.py 示例）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: -apple-system, "PingFang SC", sans-serif; max-width: 1100px; margin: 32px auto; padding: 0 20px; }
+    h1 { font-size: 20px; }
+    h2 { font-size: 16px; color: #555; margin-top: 32px; }
+    .mermaid { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>mini-swe-agent 三层交互流程（以创建并运行 hello.py 为例）</h1>
+
+  <h2>一、一个 step 内的三层交互（时序图）</h2>
+  <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant A as Agent (run/step)
+    participant M as Model (LitellmModel)
+    participant E as Environment (Local)
+
+    Note over A: messages = [system, user]
+    A->>M: query(messages, tools=[BASH_TOOL])
+    M-->>A: assistant 消息 (content + tool_calls + extra.actions{command, tool_call_id})
+    Note over A: add_messages(assistant)
+    A->>E: execute(action{command:"pwd && ls -la"})
+    E-->>A: {output, returncode:0, exception_info}
+    Note over A: format_observation -> tool 消息(带 tool_call_id) -> add_messages(tool)
+    Note over A: messages 变长，进入下一个 step
+  </pre>
+
+  <h2>二、整次 run 的完整流程（流程图）</h2>
+  <pre class="mermaid">
+flowchart TD
+    Start([用户任务: 创建并运行 hello.py]) --> Init[run(): 初始化 messages = system + user]
+    Init --> Loop{while True}
+    Loop --> Q["query(): 把 messages+tools 发给 Kimi<br/>拿回 assistant 消息 + action"]
+    Q --> Ex["execute_actions(): env 执行 action 里的命令<br/>结果做成 tool 消息追加回 messages"]
+    Ex --> Chk{"命令输出第一行是<br/>COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT ?"}
+    Chk -- 否 --> Loop
+    Chk -- 是 --> Sub[Environment 抛 Submitted]
+    Sub --> Exit["run() 追加 role=exit 消息"]
+    Exit --> Break{{"messages[-1].role == exit ? -> break"}}
+    Break --> Done([结束: exit_status=Submitted])
+  </pre>
+
+  <script>mermaid.initialize({ startOnLoad: true, theme: "default" });</script>
+</body>
+</html>
